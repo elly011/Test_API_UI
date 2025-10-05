@@ -18,7 +18,7 @@ pipeline {
                 python -m venv venv
                 call venv\\Scripts\\activate.bat
                 pip install --upgrade pip
-                pip install -r requirements.txt
+                if exist requirements.txt pip install -r requirements.txt
                 npm install -g newman
                 '''
             }
@@ -28,7 +28,7 @@ pipeline {
             steps {
                 bat '''
                 call venv\\Scripts\\activate.bat
-                pytest test_automa_UI\*.py --alluredir=%REPORT_DIR%\\allure-results
+                pytest test_automa_UI\\*.py --alluredir=%REPORT_DIR%\\allure-results
                 '''
             }
         }
@@ -42,27 +42,20 @@ pipeline {
                 '''
             }
         }
-
-        stage('Generate Allure Report') {
-            steps {
-                bat '''
-                allure generate %REPORT_DIR%\\allure-results --clean -o %REPORT_DIR%\\allure-report
-                '''
-            }
-        }
-
-        stage('Publish Report') {
-            steps {
-                publishHTML([
-                    reportDir: "%REPORT_DIR%\\allure-report",
-                    reportFiles: 'index.html',
-                    reportName: 'Allure Test Report'
-                ])
-            }
-        }
     }
 
     post {
+        always {
+            echo "🔹 Génération du rapport Allure même si les tests ont échoué..."
+            bat '''
+            allure generate %REPORT_DIR%\\allure-results --clean -o %REPORT_DIR%\\allure-report
+            '''
+            publishHTML([
+                reportDir: "%REPORT_DIR%\\allure-report",
+                reportFiles: 'index.html',
+                reportName: 'Allure Test Report'
+            ])
+        }
         success {
             echo "✅ Build et tests réussis ! Rapport disponible dans Jenkins."
         }
