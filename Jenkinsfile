@@ -26,27 +26,27 @@ pipeline {
 
         stage('Run UI Tests (Selenium)') {
             steps {
-                sh '''
-                source venv/bin/activate
-                pytest tests/ui/test_ui_selenium.py --alluredir=${REPORT_DIR}/allure-results
+                bat '''
+                call venv\\Scripts\\activate.bat
+                pytest tests\\ui\\test_ui_selenium.py --alluredir=%REPORT_DIR%\\allure-results
                 '''
             }
         }
 
         stage('Run API Tests (Postman)') {
             steps {
-                sh '''
-                newman run tests/api/postman_collection.json \
-                -e tests/api/newman_env.json \
-                --reporters cli,allure --reporter-allure-export ${REPORT_DIR}/allure-results
+                bat '''
+                newman run tests\\api\\postman_collection.json ^
+                -e tests\\api\\newman_env.json ^
+                --reporters cli,allure --reporter-allure-export %REPORT_DIR%\\allure-results
                 '''
             }
         }
 
         stage('Generate Allure Report') {
             steps {
-                sh '''
-                allure generate ${REPORT_DIR}/allure-results --clean -o ${REPORT_DIR}/allure-report
+                bat '''
+                allure generate %REPORT_DIR%\\allure-results --clean -o %REPORT_DIR%\\allure-report
                 '''
             }
         }
@@ -54,7 +54,7 @@ pipeline {
         stage('Publish Report') {
             steps {
                 publishHTML([
-                    reportDir: "${REPORT_DIR}/allure-report",
+                    reportDir: "%REPORT_DIR%\\allure-report",
                     reportFiles: 'index.html',
                     reportName: 'Allure Test Report'
                 ])
