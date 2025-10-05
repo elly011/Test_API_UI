@@ -1,0 +1,6 @@
+"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
+"","9361","test_glisser_im","","2025-10-03","passed","2025-10-03","","test_glisser_im","",""
+"","9996","test_liste_deroulante","","2025-10-03","passed","2025-10-03","","test_liste_deroulante","",""
+"","9973","test_modal","","2025-10-03","passed","2025-10-03","","test_modal","",""
+"","9624","test_modal","","2025-10-03","passed","2025-10-03","","test_radio_buttons","",""
+"Ce test ouvre la page, et accepte l'alerte.","10076","Automoatisé l'affichage d'alerte","","2025-10-03","passed","2025-10-03","","test_alert","",""
