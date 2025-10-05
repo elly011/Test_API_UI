@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        REPORT_DIR = "reports"
+        REPORT_DIR = "rapports"
     }
 
     stages {
@@ -18,7 +18,7 @@ pipeline {
                 python -m venv venv
                 call venv\\Scripts\\activate.bat
                 pip install --upgrade pip
-                if exist requirements.txt pip install -r requirements.txt
+                if exist exigences.txt pip install -r exigences.txt
                 npm install -g newman
                 '''
             }
@@ -28,7 +28,11 @@ pipeline {
             steps {
                 bat '''
                 call venv\\Scripts\\activate.bat
-                pytest test_automa_UI\\*.py --alluredir=%REPORT_DIR%\\allure-results
+                if exist test_automa_UI (
+                    pytest test_automa_UI --alluredir=%REPORT_DIR%\\allure-results
+                ) else (
+                    echo "❌ Dossier test_automa_UI introuvable !"
+                )
                 '''
             }
         }
@@ -36,9 +40,13 @@ pipeline {
         stage('Run API Tests (Postman)') {
             steps {
                 bat '''
-                newman run "newman API\\postman_collection.json" ^
-                -e "newman API\\newman_env.json" ^
-                --reporters cli,allure --reporter-allure-export %REPORT_DIR%\\allure-results
+                if exist "API Newman\\postman_collection.json" (
+                    newman run "API Newman\\postman_collection.json" ^
+                    -e "API Newman\\newman_env.json" ^
+                    --reporters cli,allure --reporter-allure-export %REPORT_DIR%\\allure-results
+                ) else (
+                    echo "❌ Collection Postman introuvable !"
+                )
                 '''
             }
         }
@@ -48,13 +56,18 @@ pipeline {
         always {
             echo "🔹 Génération du rapport Allure même si les tests ont échoué..."
             bat '''
-            allure generate %REPORT_DIR%\\allure-results --clean -o %REPORT_DIR%\\allure-report
+            if exist %REPORT_DIR%\\allure-results (
+                allure generate %REPORT_DIR%\\allure-results --clean -o %REPORT_DIR%\\allure-report
+            ) else (
+                echo "❌ Aucun résultat Allure à générer !"
+            )
             '''
             publishHTML([
                 reportDir: "%REPORT_DIR%\\allure-report",
                 reportFiles: 'index.html',
                 reportName: 'Allure Test Report'
             ])
+            archiveArtifacts artifacts: 'rapports/allure-report/**', fingerprint: true
         }
         success {
             echo "✅ Build et tests réussis ! Rapport disponible dans Jenkins."
